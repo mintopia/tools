@@ -36,11 +36,11 @@ class NextFastestTrain
         }
 
         // Extract train's actual origin and destination
-        $originCrs = $fromService['origin'][0]['crs'] ?? null;
-        $destinationCrs = $fromService['destination'][0]['crs'] ?? null;
+        $originDescription = $fromService['locationDetail']['origin'][0]['description'] ?? null;
+        $destinationDescription = $fromService['locationDetail']['destination'][0]['description'] ?? null;
 
-        $originStation = $originCrs ? TrainStation::where('crs', $originCrs)->first() : null;
-        $destinationStation = $destinationCrs ? TrainStation::where('crs', $destinationCrs)->first() : null;
+        $originStation = TrainStation::where('name', $originDescription)->first();
+        $destinationStation = TrainStation::where('name', $destinationDescription)->first();
 
         $train = new self();
         $train->headCode = $fromService['trainIdentity'] ?? $fromService['runningIdentity'] ?? 'Unknown';

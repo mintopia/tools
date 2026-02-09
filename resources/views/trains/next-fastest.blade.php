@@ -131,7 +131,7 @@
                                                 <div class="text-muted small">{{ $train->from->station->name }}</div>
                                             </td>
                                             <td class="d-none d-md-table-cell">
-                                                <div><strong>{{ $train->destination?->station->name ?? $train->to->station->name }}</strong></div>
+                                                <div><strong>{{ $train->destination?->station->name ?? 'Unknown' }}</strong></div>
                                                 <div class="text-muted small">{{ $train->headCode }} &middot; {{ $train->operator }}</div>
                                             </td>
                                             <td>

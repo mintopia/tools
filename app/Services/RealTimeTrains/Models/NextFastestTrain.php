@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Services\RealTimeTrains\Models;
+
+use App\Models\TrainStation;
+use Carbon\CarbonImmutable;
+
+class NextFastestTrain
+{
+    public string $headCode;
+    public string $operator;
+    public ?string $serviceUid = null;
+    public ?CallingAt $from = null;
+    public ?CallingAt $to = null;
+    public ?CallingAt $origin = null;
+    public ?CallingAt $destination = null;
+    public ?string $serviceDate = null;
+
+    public static function fromSearchResponses(
+        array $fromService,
+        array $arrivalService,
+        TrainStation $fromStation,
+        TrainStation $toStation,
+        string $serviceDate
+    ): ?self {
+        $serviceUid = $fromService['serviceUid'] ?? null;
+        if (!$serviceUid) {
+            return null;
+        }
+
+        $fromStop = self::mapLocationDetailToCallingAt($fromService['locationDetail'] ?? [], $fromStation);
+        $toStop = self::mapLocationDetailToCallingAt($arrivalService['locationDetail'] ?? [], $toStation);
+
+        if (!$fromStop || !$toStop) {
+            return null;
+        }
+
+        // Extract train's actual origin and destination
+        $originCrs = $fromService['origin'][0]['crs'] ?? null;
+        $destinationCrs = $fromService['destination'][0]['crs'] ?? null;
+
+        $originStation = $originCrs ? TrainStation::where('crs', $originCrs)->first() : null;
+        $destinationStation = $destinationCrs ? TrainStation::where('crs', $destinationCrs)->first() : null;
+
+        $train = new self();
+        $train->headCode = $fromService['trainIdentity'] ?? $fromService['runningIdentity'] ?? 'Unknown';
+        $train->operator = $fromService['atocName'] ?? 'Unknown';
+        $train->serviceUid = $serviceUid;
+        $train->serviceDate = $serviceDate;
+        $train->from = $fromStop;
+        $train->to = $toStop;
+
+        // Set origin and destination as CallingAt objects if we have the stations
+        if ($originStation) {
+            $originCallingAt = new CallingAt();
+            $originCallingAt->station = $originStation;
+            $originCallingAt->scheduled = $fromStop->scheduled; // Placeholder times
+            $originCallingAt->expected = $fromStop->expected;
+            $train->origin = $originCallingAt;
+        }
+
+        if ($destinationStation) {
+            $destinationCallingAt = new CallingAt();
+            $destinationCallingAt->station = $destinationStation;
+            $destinationCallingAt->scheduled = $toStop->scheduled; // Placeholder times
+            $destinationCallingAt->expected = $toStop->expected;
+            $train->destination = $destinationCallingAt;
+        }
+
+        return $train;
+    }
+
+    private static function mapLocationDetailToCallingAt(array $detail, TrainStation $station): ?CallingAt
+    {
+        $scheduled = $detail['gbttBookedDeparture'] ?? $detail['gbttBookedArrival'] ?? null;
+        $expected = $detail['realtimeDeparture'] ?? $detail['realtimeArrival'] ?? null;
+
+        if (!$scheduled || !$expected) {
+            return null;
+        }
+
+        $callingAt = new CallingAt();
+        $callingAt->station = $station;
+        $callingAt->platform = $detail['platform'] ?? null;
+        $callingAt->scheduled = self::parseTime($scheduled);
+        $callingAt->expected = self::parseTime($expected);
+
+        return $callingAt;
+    }
+
+    private static function parseTime(string $time): CarbonImmutable
+    {
+        $hour = substr($time, 0, 2);
+        $minute = substr($time, 2, 2);
+
+        return CarbonImmutable::today()->setTime((int)$hour, (int)$minute);
+    }
+}

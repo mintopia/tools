@@ -1,0 +1,10 @@
+@import "@tabler/core/dist/css/tabler.min.css";
+@import "@tabler/icons-webfont/dist/tabler-icons.min.css";
+@import "./trains.css";
+
+:root {
+    --tblr-primary: #00ada1;
+    --tblr-primary-rgb: 0, 173, 161;
+}
+
+/* Custom styles can be added below */

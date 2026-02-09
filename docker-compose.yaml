@@ -1,0 +1,174 @@
+services:
+  tools:
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    env_file: .env
+    environment:
+      - XDEBUG_CONFIG=client_host=host.docker.internal
+      - PHP_IDE_CONFIG=serverName=tools
+      - XDEBUG_MODE=debug
+      - XDEBUG_SESSION=start
+      - CADDY_SERVER_FRANKENPHP_OPTIONS=
+      - APP_INDEX_FILE=index.php
+    depends_on:
+      - redis
+      - db
+
+  reverb:
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+      - db
+    entrypoint: [ "php", "artisan", "reverb:start", "--host=0.0.0.0", "--debug", "--port=80" ]
+    healthcheck:
+      disable: true
+
+  horizon:
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    restart: unless-stopped
+    entrypoint: [ "php", "artisan", "horizon" ]
+    env_file: .env
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      disable: true
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    restart: unless-stopped
+    entrypoint: [ "php", "artisan", "schedule:work" ]
+    env_file: .env
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+      - redis
+    healthcheck:
+      disable: true
+
+  db:
+    image: mariadb:10.5-focal
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  redis:
+    image: redis:6.2.6
+    restart: unless-stopped
+
+  composer:
+    profiles: [ "composer" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "composer" ]
+    command: [ "--version" ]
+    volumes:
+      - ./:/app
+    healthcheck:
+      disable: true
+
+  test:
+    profiles: [ "test" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "php", "vendor/bin/phpunit" ]
+    volumes:
+      - ./:/app
+    healthcheck:
+      disable: true
+
+  vite:
+    profiles: [ "vite" ]
+    image: node:23
+    entrypoint: [ "npm" ]
+    command: [ "run", "dev" ]
+    working_dir: /app
+    volumes:
+      - ./:/app
+    ports:
+      - 5173:5173
+
+  npm:
+    profiles: [ "npm" ]
+    image: node:23
+    entrypoint: [ "npm" ]
+    command: [ "" ]
+    working_dir: /app
+    volumes:
+      - ./:/app
+
+  artisan:
+    profiles: [ "artisan" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "php", "/app/artisan" ]
+    volumes:
+      - ./:/app/
+    depends_on:
+      - redis
+      - db
+    healthcheck:
+      disable: true
+
+  phpcs:
+    profiles: [ "phpcs" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "vendor/bin/phpcs" ]
+    volumes:
+      - ./:/app/
+    healthcheck:
+      disable: true
+
+  phpcbf:
+    profiles: [ "phpcbf" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "vendor/bin/phpcbf" ]
+    volumes:
+      - ./:/app/
+    healthcheck:
+      disable: true
+
+  shell:
+    profiles: [ "shell" ]
+    build:
+      context: .
+      dockerfile: docker/develop/Dockerfile
+    entrypoint: [ "/bin/sh" ]
+    volumes:
+      - ./:/app/
+    depends_on:
+      - redis
+      - db
+    healthcheck:
+      disable: true
+volumes:
+  dbdata:
+    driver: local

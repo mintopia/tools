@@ -1,0 +1,357 @@
+/* Train Search Autocomplete */
+.autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #d9dbde;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-top: 2px;
+}
+
+.autocomplete-dropdown.show {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item:active {
+    background-color: #f8f9fa;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* Transport map styles */
+.train-timetable {
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+    overflow: visible;
+}
+
+.train-timetable td,
+.train-timetable th {
+    border: none !important;
+    border-bottom: 1px solid #e9ecef;
+    padding: 0.5rem 0.25rem;
+    overflow: visible;
+}
+
+.train-timetable thead th {
+    border-bottom: 2px solid #dee2e6 !important;
+    font-size: 0.75rem;
+}
+
+.train-timetable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.transport-map-col {
+    width: 30px;
+    padding: 0 !important;
+    vertical-align: middle;
+    overflow: visible;
+}
+
+.transport-map-item {
+    position: relative;
+    width: 30px;
+    height: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.transport-map-item::before {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 100%;
+    background-color: #d0d0d0;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+}
+
+/* Journey segment line (highlighted) */
+.transport-map-item[data-journey="true"]::before {
+    background-color: #00ada1;
+}
+
+/* Visited segment line (dimmed) */
+.transport-map-item[data-journey="true"][data-visited="true"]::before {
+    background-color: #80d6cd;
+    opacity: 0.7;
+}
+
+/* Journey start station - colored line only extends downward from center */
+.transport-map-item[data-journey-start="true"]::before {
+    top: 50%;
+    height: 50%;
+}
+
+/* Add gray line segment above journey start */
+.transport-map-item[data-journey-start="true"]::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 50%;
+    background-color: #d0d0d0;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    z-index: 0;
+}
+
+/* Journey end station - colored line only extends upward to center */
+.transport-map-item[data-journey-end="true"]::before {
+    height: 50%;
+    top: 0;
+}
+
+/* Add gray line segment below journey end */
+.transport-map-item[data-journey-end="true"]::after {
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 50%;
+    background-color: #d0d0d0;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0;
+    top: 50%;
+    z-index: 0;
+}
+
+.transport-stop {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: white;
+    border: 3px solid #d0d0d0;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+/* Journey stops */
+.journey-segment .transport-stop {
+    border-color: #00ada1;
+}
+
+/* Visited stops - all visited stations get filled circle */
+.transport-stop-visited {
+    background-color: #b8b8b8;
+    border-color: #b8b8b8;
+}
+
+/* Visited stops within journey - lighter primary color */
+.journey-segment .transport-stop-visited {
+    background-color: #80d6cd;
+    border-color: #80d6cd;
+}
+
+/* Visited line segments outside journey */
+.visited-station:not(.journey-segment) .transport-map-item::before {
+    background-color: #b8b8b8;
+    opacity: 0.6;
+}
+
+.transport-stop-start,
+.transport-stop-end {
+    width: 16px;
+    height: 16px;
+    border-width: 4px;
+}
+
+.transport-stop-start {
+    background-color: var(--tblr-green);
+    border-color: var(--tblr-green);
+}
+
+.transport-stop-end {
+    background-color: var(--tblr-blue);
+    border-color: var(--tblr-blue);
+}
+
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Train detail headings */
+.train-detail-heading {
+    color: #00ada1;
+    font-weight: 600;
+    font-size: 1.1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #00ada1;
+    display: flex;
+    align-items: center;
+}
+
+.train-detail-heading i {
+    opacity: 0.8;
+}
+
+/* Journey segment row styling */
+.journey-segment {
+    background-color: rgba(0, 173, 161, 0.03);
+}
+
+.train-timetable tbody tr:first-child .transport-map-item::before {
+    top: 50%;
+    height: 50%;
+}
+
+.train-timetable tbody tr:first-child .transport-map-item::after {
+    display: none;
+}
+
+.train-timetable tbody tr:last-child .transport-map-item::before {
+    height: 50%;
+    top: 0;
+}
+
+.train-timetable tbody tr:last-child .transport-map-item::after {
+    display: none;
+}
+
+/* Responsive styles for mobile devices */
+@media (max-width: 767px) {
+    /* Compact badge styling on mobile */
+    .badge-lg {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+
+    .badge {
+        font-size: 0.65rem !important;
+    }
+
+    /* Reduce table padding on mobile */
+    .table td {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .table th {
+        padding: 0.5rem 0.25rem;
+    }
+
+    /* Stack train info on mobile */
+    .train-row td {
+        font-size: 0.875rem;
+    }
+
+    .train-row .small {
+        font-size: 0.7rem !important;
+    }
+
+    /* Reduce transport map on mobile */
+    .transport-map-col {
+        width: 24px;
+    }
+
+    .transport-stop {
+        width: 10px;
+        height: 10px;
+        border-width: 2px;
+    }
+
+    .transport-stop-origin,
+    .transport-stop-destination {
+        width: 14px;
+        height: 14px;
+        border-width: 3px;
+    }
+
+    /* Mobile friendly card spacing */
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    /* Reduce detail panel padding on mobile */
+    .train-details .p-3 {
+        padding: 0.75rem !important;
+    }
+
+    /* Stack form columns on mobile */
+    .row.g-3 > [class*='col-'] {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Make buttons more touch-friendly */
+    .btn {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Mobile-friendly table */
+    .train-timetable {
+        font-size: 0.75rem;
+    }
+
+    .train-timetable td,
+    .train-timetable th {
+        padding: 0.35rem 0.2rem;
+    }
+
+    .train-timetable thead th {
+        font-size: 0.65rem;
+    }
+
+    /* Ensure heading is readable on mobile */
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+    }
+}
+
+/* iPhone 16 Pro specific adjustments (390px width) */
+@media (max-width: 390px) {
+    /* Extra compact for smaller screens */
+    .badge-lg {
+        font-size: 0.65rem !important;
+    }
+
+    .train-row .small {
+        font-size: 0.65rem !important;
+    }
+
+    .train-timetable {
+        font-size: 0.7rem;
+    }
+
+    .train-timetable td,
+    .train-timetable th {
+        padding: 0.25rem 0.15rem;
+    }
+}

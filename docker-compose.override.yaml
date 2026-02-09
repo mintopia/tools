@@ -1,0 +1,12 @@
+services:
+  tools:
+    networks:
+      - default
+      - frontend
+  reverb:
+    networks:
+      - default
+      - frontend
+networks:
+    frontend:
+        external: true

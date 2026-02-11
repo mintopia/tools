@@ -1,4 +1,4 @@
-import { initAutocompleteElements } from './autocomplete';
+import {initAutocompleteElements} from './autocomplete';
 import noUiSlider from 'nouislider';
 
 // Flight Results Manager

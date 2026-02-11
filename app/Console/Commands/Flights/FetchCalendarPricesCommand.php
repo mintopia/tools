@@ -4,7 +4,7 @@ namespace App\Console\Commands\Flights;
 
 use App\Models\FlightCalendar;
 use Illuminate\Console\Command;
-
+use Illuminate\Support\Facades\Artisan;
 use function Laravel\Prompts\progress;
 
 class FetchCalendarPricesCommand extends Command
@@ -12,7 +12,7 @@ class FetchCalendarPricesCommand extends Command
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'flights:fetch-calendar-prices {--id= : Specific calendar ID to update}';
+    protected $signature = 'flights:fetch-calendar-prices {--id= : Specific calendar ID to update}{--queue : Queue the processing}';
 
     /**
      * The console command description.
@@ -47,8 +47,13 @@ class FetchCalendarPricesCommand extends Command
             }
 
             foreach ($calendars as $calendar) {
-                $this->info("Fetching prices for: {$calendar->name}");
-                $this->fetchPricesForCalendar($calendar);
+                if ($this->option('queue')) {
+                    $this->info("Queued fetching prices for: {$calendar->name}");
+                    Artisan::queue('flights:fetch-calendar-prices', ['id' => $calendar->id]);
+                } else {
+                    $this->info("Fetching prices for: {$calendar->name}");
+                    $this->fetchPricesForCalendar($calendar);
+                }
             }
         }
 

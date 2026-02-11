@@ -4,7 +4,6 @@ namespace App\Console\Commands\Setup;
 
 use App\Models\TrainStation;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use function Laravel\Prompts\text;
 
 class ImportTrainStationsCommand extends Command

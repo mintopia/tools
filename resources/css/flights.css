@@ -400,8 +400,8 @@
         margin-bottom: 0.5rem;
     }
 
-    .calendar-cell-date::before {
-        content: attr(data-day-name) ', ';
+    .calendar-cell-date:before {
+        content: attr(data-day-name);
         font-weight: 400;
         color: var(--tblr-muted);
     }

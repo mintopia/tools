@@ -2,8 +2,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\FlightCalendar;
-use App\Services\FlightSearch\BasicSearch;
-use Mintopia\LaravelFlights\FlightService;
 
 class FlightController extends Controller
 {

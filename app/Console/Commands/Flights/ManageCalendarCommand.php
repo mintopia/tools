@@ -7,14 +7,12 @@ use App\Models\FlightCalendar;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Helper\Table;
-use Symfony\Component\Console\Helper\TableSeparator;
-
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
-use function Laravel\Prompts\info;
 
 class ManageCalendarCommand extends Command
 {

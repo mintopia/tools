@@ -2,7 +2,6 @@
 namespace App\Console\Commands\OpnSense\Models;
 
 use Illuminate\Support\Collection;
-use IPTools\IP;
 use IPTools\Network;
 use IPTools\Range;
 

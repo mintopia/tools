@@ -8,7 +8,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Console\Helper\Table;
-
 use function Laravel\Prompts\confirm;
 
 class PrunePricesCommand extends Command

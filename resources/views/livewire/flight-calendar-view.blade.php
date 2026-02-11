@@ -114,7 +114,7 @@
 
                             <div class="calendar-cell {{ $day['dayType'] === 'weekend' ? 'weekend-bg' : '' }} {{ $day['dayType'] === 'holiday' ? 'holiday-bg' : '' }} {{ $isToday ? 'today-bg' : '' }} {{ !$day['inRange'] ? 'text-muted' : '' }}" data-date="{{ $dateKey }}">
                                 <div class="calendar-cell-date {{ $isToday ? 'today' : '' }}" data-day-name="{{ $day['date']->format('D, M j') }}">
-                                    {{ $day['date']->format('j') }}
+                                    <span class="d-none d-lg-inline">{{ $day['date']->format('j') }}</span>
                                     @if($totalFlights > 0)
                                         <span class="flight-count-badge" data-total="{{ $totalFlights }}">{{ $totalFlights }}</span>
                                     @endif

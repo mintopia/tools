@@ -2,18 +2,13 @@
 namespace App\Console\Commands\Flights;
 
 use Carbon\CarbonImmutable;
-use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Number;
 use Mintopia\Flights\Enums\SortOrder;
 use Mintopia\LaravelFlights\FlightService;
 use Mintopia\LaravelFlights\Models\Itinerary;
 use Mintopia\LaravelFlights\ProxyHelper;
 use Symfony\Component\Console\Helper\TableSeparator;
 use Symfony\Component\Console\Input\InputArgument;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use function Laravel\Prompts\table;

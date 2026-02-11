@@ -5,7 +5,6 @@ namespace App\Providers;
 use App\Services\RealTimeTrains\RealTimeTrainsApiClient;
 use App\Services\RealTimeTrains\RealTimeTrainsService;
 use Illuminate\Support\ServiceProvider;
-use Mintopia\LaravelFlights\FlightService as LaravelFlightService;
 
 class AppServiceProvider extends ServiceProvider
 {

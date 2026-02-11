@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\TrainStation;
 use App\Services\RealTimeTrains\RealTimeTrainsService;
-use Illuminate\Support\Collection;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 

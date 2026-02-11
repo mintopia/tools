@@ -6,7 +6,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Number;
-use Mintopia\Flights\Support\DateIntervalFormatter;
 use Mintopia\LaravelFlights\FlightService;
 use Mintopia\LaravelFlights\Models\Itinerary;
 use Symfony\Component\Console\Input\InputArgument;

@@ -725,6 +725,470 @@ function initShareButton() {
     });
 }
 
+// Flight Calendar Filters Manager
+class FlightCalendarFilters {
+    constructor(calendarSelector) {
+        this.calendar = document.querySelector(calendarSelector);
+        if (!this.calendar) {
+            return;
+        }
+
+        // Prevent duplicate initialization
+        if (this.calendar.dataset.filtersInitialized === 'true') {
+            return;
+        }
+        this.calendar.dataset.filtersInitialized = 'true';
+
+        this.filters = {
+            airlines: [],
+            airports: [],
+            depTimeMin: 0,
+            depTimeMax: 1439,
+            arrTimeMin: 0,
+            arrTimeMax: 1439
+        };
+
+        this.depSlider = null;
+        this.arrSlider = null;
+
+        // IMPORTANT: Order matters!
+        // 1. Create the filter UI elements
+        this.initializeFilters();
+
+        // 2. Attach event listeners to the newly created elements
+        this.attachEventListeners();
+
+        // 3. Initialize sliders
+        this.initializeSliders();
+
+        // 4. Read and apply filters from URL (after DOM updates)
+        requestAnimationFrame(() => {
+            this.readFiltersFromURL();
+        });
+    }
+
+    initializeFilters() {
+        // Extract unique airlines and airports from all flight cards
+        const airlinesMap = new Map(); // code -> name
+        const airportsMap = new Map(); // code -> name
+
+        document.querySelectorAll('.flight-mini-card').forEach(card => {
+            const airlineCode = card.dataset.airline;
+            const airlineName = card.dataset.airlineName;
+            const fromAirport = card.dataset.fromAirport;
+            const fromAirportName = card.dataset.fromAirportName;
+            const toAirport = card.dataset.toAirport;
+            const toAirportName = card.dataset.toAirportName;
+
+            if (airlineCode && !airlinesMap.has(airlineCode)) {
+                airlinesMap.set(airlineCode, airlineName || airlineCode);
+            }
+            if (fromAirport && !airportsMap.has(fromAirport)) {
+                airportsMap.set(fromAirport, fromAirportName || fromAirport);
+            }
+            if (toAirport && !airportsMap.has(toAirport)) {
+                airportsMap.set(toAirport, toAirportName || toAirport);
+            }
+        });
+
+        // Populate airlines checkboxes
+        const airlinesContainer = document.getElementById('calendar-airlines-filter');
+        if (airlinesContainer && airlinesMap.size > 0) {
+            const sortedAirlines = Array.from(airlinesMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+            airlinesContainer.innerHTML = sortedAirlines.map(([code, name]) => `
+                <label class="form-check">
+                    <input type="checkbox" class="form-check-input" value="${code}" data-filter="airline">
+                    <span class="form-check-label">${name} (${code})</span>
+                </label>
+            `).join('');
+        }
+
+        // Populate airports checkboxes
+        const airportsContainer = document.getElementById('calendar-airports-filter');
+        if (airportsContainer && airportsMap.size > 0) {
+            const sortedAirports = Array.from(airportsMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+            airportsContainer.innerHTML = sortedAirports.map(([code, name]) => `
+                <label class="form-check">
+                    <input type="checkbox" class="form-check-input" value="${code}" data-filter="airport">
+                    <span class="form-check-label">${name} (${code})</span>
+                </label>
+            `).join('');
+        }
+    }
+
+    initializeSliders() {
+        // Departure time slider
+        const depSlider = document.getElementById('calendar-dep-time-slider');
+        if (depSlider && typeof noUiSlider !== 'undefined') {
+            // Check if slider already exists
+            if (depSlider.noUiSlider) {
+                depSlider.noUiSlider.destroy();
+            }
+
+            this.depSlider = noUiSlider.create(depSlider, {
+                start: [0, 1439],
+                connect: true,
+                range: { 'min': 0, 'max': 1439 },
+                step: 15,
+                tooltips: false
+            });
+
+            this.depSlider.on('update', (values) => {
+                const min = Math.round(values[0]);
+                const max = Math.round(values[1]);
+                const minTime = this.minutesToTime(min);
+                const maxTime = this.minutesToTime(max);
+                const display = document.getElementById('calendar-dep-time-display');
+                if (display) display.textContent = `${minTime} - ${maxTime}`;
+            });
+
+            this.depSlider.on('change', () => {
+                const values = this.depSlider.get();
+                this.filters.depTimeMin = Math.round(values[0]);
+                this.filters.depTimeMax = Math.round(values[1]);
+                this.applyFilters();
+                this.updateURL();
+            });
+        }
+
+        // Arrival time slider
+        const arrSlider = document.getElementById('calendar-arr-time-slider');
+        if (arrSlider && typeof noUiSlider !== 'undefined') {
+            // Check if slider already exists
+            if (arrSlider.noUiSlider) {
+                arrSlider.noUiSlider.destroy();
+            }
+
+            this.arrSlider = noUiSlider.create(arrSlider, {
+                start: [0, 1439],
+                connect: true,
+                range: { 'min': 0, 'max': 1439 },
+                step: 15,
+                tooltips: false
+            });
+
+            this.arrSlider.on('update', (values) => {
+                const min = Math.round(values[0]);
+                const max = Math.round(values[1]);
+                const minTime = this.minutesToTime(min);
+                const maxTime = this.minutesToTime(max);
+                const display = document.getElementById('calendar-arr-time-display');
+                if (display) display.textContent = `${minTime} - ${maxTime}`;
+            });
+
+            this.arrSlider.on('change', () => {
+                const values = this.arrSlider.get();
+                this.filters.arrTimeMin = Math.round(values[0]);
+                this.filters.arrTimeMax = Math.round(values[1]);
+                this.applyFilters();
+                this.updateURL();
+            });
+        }
+    }
+
+    minutesToTime(minutes) {
+        const h = Math.floor(minutes / 60);
+        const m = minutes % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+
+    readFiltersFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        let needsApply = false;
+
+        // Airlines - populate filter array and check boxes
+        if (params.has('airlines')) {
+            this.filters.airlines = params.get('airlines').split(',').filter(a => a);
+            this.filters.airlines.forEach(airline => {
+                const checkbox = document.querySelector(`input[data-filter="airline"][value="${airline}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            needsApply = true;
+        }
+
+        // Airports - populate filter array and check boxes
+        if (params.has('airports')) {
+            this.filters.airports = params.get('airports').split(',').filter(a => a);
+            this.filters.airports.forEach(airport => {
+                const checkbox = document.querySelector(`input[data-filter="airport"][value="${airport}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+            needsApply = true;
+        }
+
+        // Departure time
+        if (params.has('depTimeMin')) {
+            this.filters.depTimeMin = parseInt(params.get('depTimeMin'));
+            needsApply = true;
+        }
+        if (params.has('depTimeMax')) {
+            this.filters.depTimeMax = parseInt(params.get('depTimeMax'));
+            needsApply = true;
+        }
+        if (this.depSlider) {
+            this.depSlider.set([this.filters.depTimeMin, this.filters.depTimeMax]);
+        }
+
+        // Arrival time
+        if (params.has('arrTimeMin')) {
+            this.filters.arrTimeMin = parseInt(params.get('arrTimeMin'));
+            needsApply = true;
+        }
+        if (params.has('arrTimeMax')) {
+            this.filters.arrTimeMax = parseInt(params.get('arrTimeMax'));
+            needsApply = true;
+        }
+        if (this.arrSlider) {
+            this.arrSlider.set([this.filters.arrTimeMin, this.filters.arrTimeMax]);
+        }
+
+        // Apply filters if any are set
+        if (needsApply) {
+            this.applyFilters();
+            this.updateFilterCount();
+        }
+    }
+
+    updateURL() {
+        const url = new URL(window.location.href);
+        const params = url.searchParams;
+
+        // Airlines
+        if (this.filters.airlines.length > 0) {
+            params.set('airlines', this.filters.airlines.join(','));
+        } else {
+            params.delete('airlines');
+        }
+
+        // Airports
+        if (this.filters.airports.length > 0) {
+            params.set('airports', this.filters.airports.join(','));
+        } else {
+            params.delete('airports');
+        }
+
+        // Departure time
+        if (this.filters.depTimeMin > 0) {
+            params.set('depTimeMin', this.filters.depTimeMin);
+        } else {
+            params.delete('depTimeMin');
+        }
+        if (this.filters.depTimeMax < 1439) {
+            params.set('depTimeMax', this.filters.depTimeMax);
+        } else {
+            params.delete('depTimeMax');
+        }
+
+        // Arrival time
+        if (this.filters.arrTimeMin > 0) {
+            params.set('arrTimeMin', this.filters.arrTimeMin);
+        } else {
+            params.delete('arrTimeMin');
+        }
+        if (this.filters.arrTimeMax < 1439) {
+            params.set('arrTimeMax', this.filters.arrTimeMax);
+        } else {
+            params.delete('arrTimeMax');
+        }
+
+        // Update URL without page reload
+        const newUrl = params.toString() ? `${url.pathname}?${params.toString()}` : url.pathname;
+        window.history.replaceState({}, '', newUrl);
+
+        // Update active filter count
+        this.updateFilterCount();
+    }
+
+    hasActiveFilters() {
+        return this.filters.airlines.length > 0 ||
+               this.filters.airports.length > 0 ||
+               this.filters.depTimeMin > 0 ||
+               this.filters.depTimeMax < 1439 ||
+               this.filters.arrTimeMin > 0 ||
+               this.filters.arrTimeMax < 1439;
+    }
+
+    updateFilterCount() {
+        let count = 0;
+
+        if (this.filters.airlines.length > 0) count++;
+        if (this.filters.airports.length > 0) count++;
+        if (this.filters.depTimeMin > 0 || this.filters.depTimeMax < 1439) count++;
+        if (this.filters.arrTimeMin > 0 || this.filters.arrTimeMax < 1439) count++;
+
+        const badge = document.getElementById('active-filters-count');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    applyFilters() {
+
+        // Filter each flight card
+        let totalVisible = 0;
+        let totalFlights = 0;
+
+        document.querySelectorAll('.flight-mini-card').forEach(card => {
+            totalFlights++;
+            const airline = card.dataset.airline;
+            const fromAirport = card.dataset.fromAirport;
+            const toAirport = card.dataset.toAirport;
+            const depTime = parseInt(card.dataset.depTime);
+            const arrTime = parseInt(card.dataset.arrTime);
+
+            let show = true;
+
+            // Airline filter
+            if (this.filters.airlines.length > 0 && !this.filters.airlines.includes(airline)) {
+                show = false;
+            }
+
+            // Airport filter (show if flight uses any selected airport as from OR to)
+            if (this.filters.airports.length > 0) {
+                const hasAirport = this.filters.airports.includes(fromAirport) ||
+                                 this.filters.airports.includes(toAirport);
+                if (!hasAirport) {
+                    show = false;
+                }
+            }
+
+            // Departure time filter
+            if (depTime < this.filters.depTimeMin || depTime > this.filters.depTimeMax) {
+                show = false;
+            }
+
+            // Arrival time filter
+            if (arrTime < this.filters.arrTimeMin || arrTime > this.filters.arrTimeMax) {
+                show = false;
+            }
+
+            // Show or hide
+            if (show) {
+                card.classList.remove('filtered-out');
+                totalVisible++;
+            } else {
+                card.classList.add('filtered-out');
+            }
+        });
+
+
+        // Update flight counts per day
+        this.updateFlightCounts();
+    }
+
+    updateFlightCounts() {
+        document.querySelectorAll('.calendar-cell').forEach(cell => {
+            const dateKey = cell.dataset.date;
+            if (!dateKey) return;
+
+            const flightsList = cell.querySelector('.calendar-flights-list');
+            if (!flightsList) return;
+
+            const allFlights = flightsList.querySelectorAll('.flight-mini-card');
+            const visibleFlights = flightsList.querySelectorAll('.flight-mini-card:not(.filtered-out)');
+            const totalCount = allFlights.length;
+            const visibleCount = visibleFlights.length;
+
+            // Update count badge
+            const badge = cell.querySelector('.flight-count-badge');
+            if (badge) {
+                const total = badge.dataset.total || totalCount;
+                if (visibleCount < total) {
+                    badge.textContent = `${visibleCount}/${total}`;
+                } else {
+                    badge.textContent = total;
+                }
+            }
+
+            // Show/hide empty state
+            if (visibleCount === 0 && totalCount > 0) {
+                // All flights filtered out
+                if (!flightsList.querySelector('.calendar-empty-filtered')) {
+                    const filtered = document.createElement('div');
+                    filtered.className = 'calendar-empty-filtered';
+                    filtered.textContent = 'No flights match filters';
+                    flightsList.appendChild(filtered);
+                }
+            } else {
+                const filtered = flightsList.querySelector('.calendar-empty-filtered');
+                if (filtered) filtered.remove();
+            }
+        });
+    }
+
+    attachEventListeners() {
+        // Airline checkboxes
+        document.querySelectorAll('input[data-filter="airline"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const airline = e.target.value;
+                if (e.target.checked) {
+                    if (!this.filters.airlines.includes(airline)) {
+                        this.filters.airlines.push(airline);
+                    }
+                } else {
+                    this.filters.airlines = this.filters.airlines.filter(a => a !== airline);
+                }
+                this.applyFilters();
+                this.updateURL();
+            });
+        });
+
+        // Airport checkboxes
+        document.querySelectorAll('input[data-filter="airport"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const airport = e.target.value;
+                if (e.target.checked) {
+                    if (!this.filters.airports.includes(airport)) {
+                        this.filters.airports.push(airport);
+                    }
+                } else {
+                    this.filters.airports = this.filters.airports.filter(a => a !== airport);
+                }
+                this.applyFilters();
+                this.updateURL();
+            });
+        });
+
+        // Clear filters button
+        const clearBtn = document.getElementById('calendar-clear-filters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.clearFilters();
+            });
+        }
+    }
+
+    clearFilters() {
+        // Reset filter values
+        this.filters.airlines = [];
+        this.filters.airports = [];
+        this.filters.depTimeMin = 0;
+        this.filters.depTimeMax = 1439;
+        this.filters.arrTimeMin = 0;
+        this.filters.arrTimeMax = 1439;
+
+        // Reset UI - checkboxes
+        document.querySelectorAll('input[data-filter="airline"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('input[data-filter="airport"]').forEach(cb => cb.checked = false);
+
+        if (this.depSlider) this.depSlider.set([0, 1439]);
+        if (this.arrSlider) this.arrSlider.set([0, 1439]);
+
+        // Apply and update
+        this.applyFilters();
+        this.updateURL();
+    }
+}
+
 function showToast(title, message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = 'toast show position-fixed bottom-0 end-0 m-3';
@@ -859,6 +1323,12 @@ function initFlights() {
                 initShareButton();
             }
         }
+    }
+
+    // Initialize calendar filters if calendar grid exists
+    const calendarGrid = document.getElementById('flight-calendar-grid');
+    if (calendarGrid) {
+        new FlightCalendarFilters('#flight-calendar-grid');
     }
 }
 

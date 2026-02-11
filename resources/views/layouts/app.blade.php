@@ -25,20 +25,20 @@
             <div class="collapse navbar-collapse" id="sidebar-menu">
                 <ul class="navbar-nav pt-lg-3">
                     <!-- Network Section -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#navbar-network" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <li class="nav-item dropdown {{ request()->routeIs('network.*') ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('network.*') ? 'show' : '' }}" href="#navbar-network" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->routeIs('network.*') ? 'true' : 'false' }}">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
                                 <i class="ti ti-network"></i>
                             </span>
                             <span class="nav-link-title">Network</span>
                         </a>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu {{ request()->routeIs('network.*') ? 'show' : '' }}">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('network.ultradns') }}">
+                                    <a class="dropdown-item {{ request()->routeIs('network.ultradns') ? 'active' : '' }}" href="{{ route('network.ultradns') }}">
                                         Is UltraDNS
                                     </a>
-                                    <a class="dropdown-item" href="{{ route('network.ip-lookup') }}">
+                                    <a class="dropdown-item {{ request()->routeIs('network.ip-lookup') ? 'active' : '' }}" href="{{ route('network.ip-lookup') }}">
                                         IP Lookup
                                     </a>
                                 </div>
@@ -46,35 +46,62 @@
                         </div>
                     </li>
                     <!-- Flights Section -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#navbar-flights" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <li class="nav-item dropdown {{ request()->routeIs('flights.search') ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('flights.search') ? 'show' : '' }}" href="#navbar-flights" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->routeIs('flights.search') ? 'true' : 'false' }}">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
                                 <i class="ti ti-plane"></i>
                             </span>
                             <span class="nav-link-title">Flights</span>
                         </a>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu {{ request()->routeIs('flights.search') ? 'show' : '' }}">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('flights.search') }}">
+                                    <a class="dropdown-item {{ request()->routeIs('flights.search') ? 'active' : '' }}" href="{{ route('flights.search') }}">
                                         Search
                                     </a>
                                 </div>
                             </div>
                         </div>
                     </li>
+                    <!-- Flight Calendars Section -->
+                    <li class="nav-item dropdown {{ request()->routeIs('flights.calendar') ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('flights.calendar') ? 'show' : '' }}" href="#navbar-flight-calendars" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->routeIs('flights.calendar') ? 'true' : 'false' }}">
+                            <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                <i class="ti ti-calendar"></i>
+                            </span>
+                            <span class="nav-link-title">Flight Calendars</span>
+                        </a>
+                        <div class="dropdown-menu {{ request()->routeIs('flights.calendar') ? 'show' : '' }}">
+                            <div class="dropdown-menu-columns">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'stn-fao' ? 'active' : '' }}" href="{{ route('flights.calendar', 'stn-fao') }}">
+                                        STN to FAO
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'fao-stn' ? 'active' : '' }}" href="{{ route('flights.calendar', 'fao-stn') }}">
+                                        FAO to STN
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'lon-fao' ? 'active' : '' }}" href="{{ route('flights.calendar', 'lon-fao') }}">
+                                        LON to FAO
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'fao-lon' ? 'active' : '' }}" href="{{ route('flights.calendar', 'fao-lon') }}">
+                                        FAO to LON
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
                     <!-- Trains Section -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#navbar-trains" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+                    <li class="nav-item dropdown {{ request()->routeIs('trains.*') ? 'active' : '' }}">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('trains.*') ? 'show' : '' }}" href="#navbar-trains" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->routeIs('trains.*') ? 'true' : 'false' }}">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
                                 <i class="ti ti-train"></i>
                             </span>
                             <span class="nav-link-title">Trains</span>
                         </a>
-                        <div class="dropdown-menu">
+                        <div class="dropdown-menu {{ request()->routeIs('trains.*') ? 'show' : '' }}">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="{{ route('trains.next-fastest') }}">
+                                    <a class="dropdown-item {{ request()->routeIs('trains.next-fastest') ? 'active' : '' }}" href="{{ route('trains.next-fastest') }}">
                                         Next Fastest
                                     </a>
                                 </div>

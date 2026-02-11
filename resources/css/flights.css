@@ -220,3 +220,277 @@
         font-size: 1.1rem;
     }
 }
+
+/* Flight Calendar Styles */
+
+/* Calendar Grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background-color: var(--tblr-border-color);
+    border: 1px solid var(--tblr-border-color);
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-weight: 600;
+    padding: 0.5rem;
+    background-color: var(--tblr-bg-surface);
+    border-bottom: 2px solid var(--tblr-border-color);
+    font-size: 0.875rem;
+}
+
+.calendar-cell {
+    min-height: 200px;
+    background-color: var(--tblr-card-bg, white);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-cell-date {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--tblr-muted);
+    margin-bottom: 0.375rem;
+}
+
+.calendar-flights-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    overflow-y: auto;
+    max-height: 165px;
+    padding-right: 0.125rem;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+/* Scrollbar styling for flights list */
+.calendar-flights-list::-webkit-scrollbar {
+    width: 3px;
+}
+
+.calendar-flights-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.calendar-flights-list::-webkit-scrollbar-thumb {
+    background: var(--tblr-border-color);
+    border-radius: 2px;
+}
+
+.calendar-flights-list::-webkit-scrollbar-thumb:hover {
+    background: var(--tblr-primary);
+}
+
+/* Flight Mini Cards - Time stacked, price on right */
+.flight-mini-card {
+    padding: 0.25rem 0.375rem;
+    border: 1px solid var(--tblr-border-color);
+    border-radius: var(--tblr-border-radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.flight-mini-card:hover {
+    background-color: var(--tblr-bg-surface-secondary);
+    border-color: var(--tblr-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flight-mini-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.flight-mini-card-time {
+    font-weight: 600;
+    color: var(--tblr-body-color);
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.flight-mini-card-number {
+    color: var(--tblr-muted);
+    font-size: 0.65rem;
+    line-height: 1;
+}
+
+.flight-mini-card-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.125rem;
+    flex-shrink: 0;
+}
+
+.flight-mini-card-price {
+    color: var(--tblr-primary);
+    font-weight: 700;
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.flight-mini-card-route {
+    color: var(--tblr-muted);
+    font-size: 0.65rem;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Weekend and Holiday Backgrounds */
+.weekend-bg {
+    background-color: rgba(32, 107, 196, 0.08) !important;
+}
+
+.holiday-bg {
+    background-color: rgba(32, 107, 196, 0.12) !important;
+}
+
+.today-bg {
+    border: 2px solid var(--tblr-primary) !important;
+    background-color: rgba(32, 107, 196, 0.03) !important;
+}
+
+.calendar-cell-date.today {
+    color: var(--tblr-primary);
+    font-weight: 700;
+}
+
+/* Empty State */
+.calendar-empty-state {
+    color: var(--tblr-muted);
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 0.5rem 0;
+    font-style: italic;
+}
+
+/* Calendar Responsive */
+@media (max-width: 991px) {
+    /* Switch to stacked day view on narrow screens */
+    .calendar-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-day-header {
+        display: none;
+    }
+
+    .calendar-cell {
+        min-height: auto;
+        border-bottom: 2px solid var(--tblr-border-color);
+    }
+
+    .calendar-cell-date {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .calendar-cell-date::before {
+        content: attr(data-day-name) ', ';
+        font-weight: 400;
+        color: var(--tblr-muted);
+    }
+
+    .calendar-flights-list {
+        max-height: none;
+        gap: 0.375rem;
+    }
+
+    .flight-mini-card {
+        padding: 0.5rem;
+    }
+}
+
+/* Flight Calendar Filters */
+.calendar-filters-row {
+    align-items: flex-start;
+}
+
+.calendar-filter-checkboxes {
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.calendar-filter-checkboxes::-webkit-scrollbar {
+    width: 4px;
+}
+
+.calendar-filter-checkboxes::-webkit-scrollbar-track {
+    background: var(--tblr-bg-surface);
+}
+
+.calendar-filter-checkboxes::-webkit-scrollbar-thumb {
+    background: var(--tblr-border-color);
+    border-radius: 2px;
+}
+
+.calendar-filter-checkboxes::-webkit-scrollbar-thumb:hover {
+    background: var(--tblr-primary);
+}
+
+.calendar-filter-checkboxes .form-check {
+    margin-bottom: 0.375rem;
+}
+
+/* Slider spacing */
+#calendar-dep-time-slider,
+#calendar-arr-time-slider {
+    margin-bottom: 1rem;
+}
+
+/* Flight Count Badge */
+.flight-count-badge {
+    display: inline-block;
+    margin-left: 0.375rem;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    background-color: var(--tblr-primary);
+    color: white;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+/* Filtered Out State */
+.flight-mini-card.filtered-out {
+    display: none !important;
+}
+
+.calendar-empty-filtered {
+    color: var(--tblr-muted);
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 0.5rem 0;
+    font-style: italic;
+}
+
+/* Mobile Filter Layout */
+@media (max-width: 767px) {
+    .calendar-filters-row {
+        flex-direction: column;
+    }
+
+    .calendar-filters-row > div {
+        width: 100% !important;
+    }
+
+    .calendar-filter-checkboxes {
+        max-height: 120px;
+    }
+}

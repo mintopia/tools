@@ -18,6 +18,7 @@ Route::prefix('network')->name('network.')->group(function () {
 // Flights routes
 Route::prefix('flights')->name('flights.')->group(function () {
     Route::get('/search', [\App\Http\Controllers\FlightController::class, 'search'])->name('search');
+    Route::get('/calendar/{calendar:slug}', [\App\Http\Controllers\FlightController::class, 'calendar'])->name('calendar');
 });
 
 // Trains routes

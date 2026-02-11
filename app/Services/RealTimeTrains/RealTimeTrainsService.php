@@ -61,9 +61,14 @@ class RealTimeTrainsService
             ->filter();
 
         return $matchedTrains->sort(function ($a, $b) {
-            $arrivalComparison = $a->to->expected <=> $b->to->expected;
+            // Use timestamps to handle midnight rollover
+            $aArrivalTimestamp = $a->to->expected->timestamp;
+            $bArrivalTimestamp = $b->to->expected->timestamp;
+
+            $arrivalComparison = $aArrivalTimestamp <=> $bArrivalTimestamp;
             if ($arrivalComparison === 0) {
-                return $b->from->expected <=> $a->from->expected;
+                // If arrival times are equal, prefer later departure
+                return $b->from->expected->timestamp <=> $a->from->expected->timestamp;
             }
 
             return $arrivalComparison;

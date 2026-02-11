@@ -1,116 +1,4 @@
-/**
- * Station Autocomplete Component
- */
-class StationAutocomplete {
-    constructor(inputId, dropdownId) {
-        this.input = document.getElementById(inputId);
-        this.dropdown = document.getElementById(dropdownId);
-        this.debounceTimer = null;
-        this.currentFocus = -1;
-
-        this.input.addEventListener('input', (e) => this.handleInput(e));
-        this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
-
-        document.addEventListener('click', (e) => {
-            if (e.target !== this.input) {
-                this.closeDropdown();
-            }
-        });
-    }
-
-    handleInput(e) {
-        clearTimeout(this.debounceTimer);
-        const value = e.target.value;
-
-        if (value.length < 2) {
-            this.closeDropdown();
-            return;
-        }
-
-        this.debounceTimer = setTimeout(() => {
-            this.searchStations(value);
-        }, 300);
-    }
-
-    handleKeydown(e) {
-        const items = this.dropdown.querySelectorAll('.autocomplete-item');
-
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            this.currentFocus++;
-            this.setActive(items);
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            this.currentFocus--;
-            this.setActive(items);
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (this.currentFocus > -1 && items[this.currentFocus]) {
-                items[this.currentFocus].click();
-            }
-        } else if (e.key === 'Escape') {
-            this.closeDropdown();
-        }
-    }
-
-    setActive(items) {
-        if (!items.length) return;
-
-        this.removeActive(items);
-
-        if (this.currentFocus >= items.length) this.currentFocus = 0;
-        if (this.currentFocus < 0) this.currentFocus = items.length - 1;
-
-        items[this.currentFocus].classList.add('active');
-        items[this.currentFocus].style.backgroundColor = '#e9ecef';
-    }
-
-    removeActive(items) {
-        items.forEach(item => {
-            item.classList.remove('active');
-            item.style.backgroundColor = '';
-        });
-    }
-
-    async searchStations(query) {
-        try {
-            const response = await fetch(`/api/v1/trainstations?search=${encodeURIComponent(query)}`);
-            const data = await response.json();
-
-            if (data.data && data.data.length > 0) {
-                this.showDropdown(data.data);
-            } else {
-                this.closeDropdown();
-            }
-        } catch (error) {
-            console.error('Error searching stations:', error);
-            this.closeDropdown();
-        }
-    }
-
-    showDropdown(stations) {
-        this.dropdown.innerHTML = '';
-        this.currentFocus = -1;
-
-        stations.forEach(station => {
-            const item = document.createElement('div');
-            item.className = 'autocomplete-item';
-            item.innerHTML = `<strong>${station.name}</strong> <span class="text-muted">(${station.crs})</span>`;
-            item.addEventListener('click', () => {
-                this.input.value = station.crs;
-                this.closeDropdown();
-            });
-            this.dropdown.appendChild(item);
-        });
-
-        this.dropdown.classList.add('show');
-    }
-
-    closeDropdown() {
-        this.dropdown.classList.remove('show');
-        this.currentFocus = -1;
-    }
-}
+import { initAutocompleteElements } from './autocomplete';
 
 /**
  * Recent Searches Component
@@ -123,8 +11,8 @@ class RecentSearches {
         this.form = document.getElementById('train-search-form');
 
         this.form.addEventListener('submit', () => {
-            const from = document.getElementById('from-input').value;
-            const to = document.getElementById('to-input').value;
+            const from = document.getElementById('from-hidden')?.value || '';
+            const to = document.getElementById('to-hidden')?.value || '';
             if (from && to) {
                 this.addSearch(from, to);
             }
@@ -461,18 +349,17 @@ function getTimeDiffClass(scheduledIso, expectedIso) {
 /**
  * Initialize all train search components
  */
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize station autocomplete
-    if (document.getElementById('from-input') && document.getElementById('to-input')) {
-        new StationAutocomplete('from-input', 'from-dropdown');
-        new StationAutocomplete('to-input', 'to-dropdown');
-    }
+function initTrainPage() {
+    initAutocompleteElements();
 
-    // Initialize recent searches
     if (document.getElementById('recent-searches-pills')) {
         new RecentSearches();
     }
 
-    // Initialize train details toggle
     initTrainDetailsToggle();
-});
+}
+
+document.addEventListener('DOMContentLoaded', initTrainPage);
+if (window.Livewire) {
+    document.addEventListener('livewire:navigated', initTrainPage);
+}

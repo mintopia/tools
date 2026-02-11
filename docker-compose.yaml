@@ -8,6 +8,7 @@ services:
       - ./:/app
     env_file: .env
     environment:
+      - CACHE_STORE=redis
       - XDEBUG_CONFIG=client_host=host.docker.internal
       - PHP_IDE_CONFIG=serverName=tools
       - XDEBUG_MODE=debug
@@ -39,6 +40,8 @@ services:
     restart: unless-stopped
     entrypoint: [ "php", "artisan", "horizon" ]
     env_file: .env
+    environment:
+      - CACHE_STORE=redis
     volumes:
       - ./:/app
     depends_on:
@@ -84,6 +87,8 @@ services:
       dockerfile: docker/develop/Dockerfile
     entrypoint: [ "composer" ]
     command: [ "--version" ]
+    environment:
+      - CACHE_STORE=redis
     volumes:
       - ./:/app
     healthcheck:
@@ -95,6 +100,8 @@ services:
       context: .
       dockerfile: docker/develop/Dockerfile
     entrypoint: [ "php", "vendor/bin/phpunit" ]
+    environment:
+      - CACHE_STORE=redis
     volumes:
       - ./:/app
     healthcheck:
@@ -126,6 +133,8 @@ services:
       context: .
       dockerfile: docker/develop/Dockerfile
     entrypoint: [ "php", "/app/artisan" ]
+    environment:
+      - CACHE_STORE=redis
     volumes:
       - ./:/app/
     depends_on:
@@ -162,6 +171,8 @@ services:
       context: .
       dockerfile: docker/develop/Dockerfile
     entrypoint: [ "/bin/sh" ]
+    environment:
+      - CACHE_STORE=redis
     volumes:
       - ./:/app/
     depends_on:

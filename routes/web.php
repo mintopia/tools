@@ -17,14 +17,12 @@ Route::prefix('network')->name('network.')->group(function () {
 
 // Flights routes
 Route::prefix('flights')->name('flights.')->group(function () {
-    Route::get('/search', function () {
-        return view('flights.search');
-    })->name('search');
+    Route::get('/search', [\App\Http\Controllers\FlightController::class, 'search'])->name('search');
 });
 
 // Trains routes
 Route::prefix('trains')->name('trains.')->group(function () {
-    Route::get('/next-fastest', [TrainController::class, 'nextFastest'])->name('next-fastest');
+    Route::get('/next-fastest', function () {
+        return view('trains.next-fastest');
+    })->name('next-fastest');
 });
-
-

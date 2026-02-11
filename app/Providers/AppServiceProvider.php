@@ -2,15 +2,10 @@
 
 namespace App\Providers;
 
-use App\Flights\FlightService;
-use App\Flights\ProxyHelper;
 use App\Services\RealTimeTrains\RealTimeTrainsApiClient;
 use App\Services\RealTimeTrains\RealTimeTrainsService;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
-use Illuminate\Foundation\Console\AboutCommand;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Mintopia\LaravelFlights\FlightService as LaravelFlightService;
 
 class AppServiceProvider extends ServiceProvider
 {

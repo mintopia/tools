@@ -88,11 +88,20 @@ class NextFastestTrain
         return $callingAt;
     }
 
-    private static function parseTime(string $time): CarbonImmutable
+    private static function parseTime(string $time, ?CarbonImmutable $referenceTime = null): CarbonImmutable
     {
-        $hour = substr($time, 0, 2);
-        $minute = substr($time, 2, 2);
+        $hour = (int)substr($time, 0, 2);
+        $minute = (int)substr($time, 2, 2);
 
-        return CarbonImmutable::today()->setTime((int)$hour, (int)$minute);
+        $baseTime = $referenceTime ?? CarbonImmutable::now();
+        $parsedTime = $baseTime->setTime($hour, $minute, 0);
+
+        // If reference time is provided and parsed time is significantly earlier (> 12 hours),
+        // assume it's the next day (handles midnight rollover)
+        if ($referenceTime && $parsedTime->timestamp < $referenceTime->timestamp - 43200) {
+            $parsedTime = $parsedTime->addDay();
+        }
+
+        return $parsedTime;
     }
 }

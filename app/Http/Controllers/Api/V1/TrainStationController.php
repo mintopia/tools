@@ -16,9 +16,13 @@ class TrainStationController extends Controller
         $search = $request->input('search');
         $query = TrainStation::query();
         if ($search) {
-            $query = $query
-                ->where('name', 'like', "%$search%")
-                ->orWhere('crs', 'like', "%$search%");
+            if (strlen($search) === 3) {
+                $query = $query->where('crs', $search);
+            } else {
+                $query = $query
+                    ->where('name', 'like', "%$search%")
+                    ->orWhere('crs', 'like', "%$search%");
+            }
         }
         return $query->paginate(perPage: $perPage, page: $page)->toResourceCollection(TrainStationResource::class);
     }

@@ -41,4 +41,10 @@ return [
         'base_url' => env('REALTIME_TRAINS_BASE_URL', 'https://api.rtt.io/api/v1/json/'),
     ],
 
+    'flights' => [
+        'cache_prefix' => env('FLIGHTS_CACHE_PREFIX', 'flight_search'),
+        'cache_ttl' => env('FLIGHTS_CACHE_TTL', 600),
+        'currency' => env('FLIGHTS_CURRENCY', 'GBP'),
+    ],
+
 ];

@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Mintopia Tools') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body>
 <div class="page">
@@ -89,6 +90,7 @@
         @yield('content')
     </div>
 </div>
+@livewireScripts
 </body>
 </html>
 

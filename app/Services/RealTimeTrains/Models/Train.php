@@ -24,10 +24,13 @@ class Train
         $train->serviceUid = $service['serviceUid'] ?? null;
 
         $callingAtPoints = collect();
+        $previousTime = null;
+
         foreach ($service['locations'] ?? [] as $location) {
-            $stop = self::mapCallingAt($location);
+            $stop = self::mapCallingAt($location, $previousTime);
             if ($stop) {
                 $callingAtPoints->push($stop);
+                $previousTime = $stop->expected;
             }
         }
 
@@ -42,7 +45,7 @@ class Train
         return $train;
     }
 
-    private static function mapCallingAt(array $location): ?CallingAt
+    private static function mapCallingAt(array $location, ?CarbonImmutable $previousTime = null): ?CallingAt
     {
         $crs = $location['crs'] ?? null;
         if (!$crs) {
@@ -64,17 +67,26 @@ class Train
         $callingAt = new CallingAt();
         $callingAt->station = $station;
         $callingAt->platform = $location['platform'] ?? null;
-        $callingAt->scheduled = self::parseTime($scheduledTime);
-        $callingAt->expected = self::parseTime($expectedTime);
+        $callingAt->scheduled = self::parseTime($scheduledTime, $previousTime);
+        $callingAt->expected = self::parseTime($expectedTime, $previousTime);
 
         return $callingAt;
     }
 
-    private static function parseTime(string $time): CarbonImmutable
+    private static function parseTime(string $time, ?CarbonImmutable $referenceTime = null): CarbonImmutable
     {
-        $hour = substr($time, 0, 2);
-        $minute = substr($time, 2, 2);
+        $hour = (int)substr($time, 0, 2);
+        $minute = (int)substr($time, 2, 2);
 
-        return CarbonImmutable::today()->setTime((int)$hour, (int)$minute);
+        $baseTime = $referenceTime ?? CarbonImmutable::now();
+        $parsedTime = $baseTime->setTime($hour, $minute, 0);
+
+        // If reference time is provided and parsed time is significantly earlier (> 12 hours),
+        // assume it's the next day (handles midnight rollover)
+        if ($referenceTime && $parsedTime->timestamp < $referenceTime->timestamp - 43200) {
+            $parsedTime = $parsedTime->addDay();
+        }
+
+        return $parsedTime;
     }
 }

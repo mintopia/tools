@@ -13,10 +13,12 @@
         "laravel/reverb": "^1.7",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
+        "livewire/livewire": "*",
         "mintopia/flights": "*",
         "mintopia/laravel-flights": "dev-develop",
         "pear/net_dns2": "^2.0",
-        "s1lentium/iptools": "^1.2"
+        "s1lentium/iptools": "^1.2",
+        "symfony/cache": "*"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6",

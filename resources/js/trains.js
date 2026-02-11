@@ -114,29 +114,37 @@ class RecentSearches {
  * Train Details Toggle with Lazy Loading
  */
 function initTrainDetailsToggle() {
-    document.querySelectorAll('.toggle-details').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const trainIndex = this.getAttribute('data-train-index');
-            const detailsRow = document.getElementById(`train-details-${trainIndex}`);
-            const icon = this.querySelector('i');
+    // Use event delegation to handle dynamically added buttons
+    document.addEventListener('click', function(e) {
+        const button = e.target.closest('.toggle-details');
+        if (!button) return;
 
-            if (detailsRow.style.display === 'none') {
-                // Expanding - check if we need to load data
-                if (!detailsRow.classList.contains('loaded')) {
-                    await loadTrainDetails(trainIndex, detailsRow, this);
-                }
+        e.preventDefault();
+        const trainIndex = button.getAttribute('data-train-index');
+        const detailsRow = document.getElementById(`train-details-${trainIndex}`);
+        const icon = button.querySelector('i');
 
-                detailsRow.style.display = '';
-                icon.classList.remove('ti-chevron-down');
-                icon.classList.add('ti-chevron-up');
-            } else {
-                // Collapse
-                detailsRow.style.display = 'none';
-                icon.classList.remove('ti-chevron-up');
-                icon.classList.add('ti-chevron-down');
+        if (!detailsRow || !icon) return;
+
+        // Check if the row is currently hidden
+        const isHidden = detailsRow.style.display === 'none';
+
+        if (isHidden) {
+            // Expand immediately
+            detailsRow.style.display = 'table-row';
+            icon.classList.remove('ti-chevron-down');
+            icon.classList.add('ti-chevron-up');
+
+            // Load data if not already loaded (this happens in the background)
+            if (!detailsRow.classList.contains('loaded')) {
+                loadTrainDetails(trainIndex, detailsRow, button);
             }
-        });
+        } else {
+            // Collapse
+            detailsRow.style.display = 'none';
+            icon.classList.remove('ti-chevron-up');
+            icon.classList.add('ti-chevron-down');
+        }
     });
 }
 
@@ -160,9 +168,9 @@ async function loadTrainDetails(trainIndex, detailsRow, button) {
         return;
     }
 
-    // Show loading spinner
+    // Show loading placeholder
     const contentCell = detailsRow.querySelector('td');
-    contentCell.innerHTML = '<div class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+    contentCell.innerHTML = buildLoadingPlaceholder();
 
     try {
         const response = await fetch(`/api/v1/trains/${encodeURIComponent(serviceUid)}/${year}/${month}/${day}`);
@@ -180,6 +188,74 @@ async function loadTrainDetails(trainIndex, detailsRow, button) {
         console.error('Error loading train details:', error);
         contentCell.innerHTML = `<div class="alert alert-danger mb-0">Error loading train details</div>`;
     }
+}
+
+/**
+ * Build loading placeholder HTML
+ */
+function buildLoadingPlaceholder() {
+    return `
+        <div class="p-3 p-sm-4">
+            <div class="row mb-3 g-2">
+                <div class="col-12 col-sm-6">
+                    <h4 class="train-detail-heading mb-3">
+                        <i class="ti ti-info-circle me-2"></i>Service Information
+                    </h4>
+                    <dl class="row mb-0">
+                        <dt class="col-5">Head Code</dt>
+                        <dd class="col-7"><span class="placeholder col-8"></span></dd>
+                        <dt class="col-5">Operator</dt>
+                        <dd class="col-7"><span class="placeholder col-10"></span></dd>
+                        <dt class="col-5">Platform</dt>
+                        <dd class="col-7"><span class="placeholder col-4"></span></dd>
+                    </dl>
+                </div>
+                <div class="col-12 col-sm-6">
+                    <h4 class="train-detail-heading mb-3">
+                        <i class="ti ti-clock me-2"></i>Journey Time
+                    </h4>
+                    <dl class="row mb-0">
+                        <dt class="col-5">Duration</dt>
+                        <dd class="col-7"><span class="placeholder col-6"></span></dd>
+                        <dt class="col-5">Stops</dt>
+                        <dd class="col-7"><span class="placeholder col-4"></span></dd>
+                    </dl>
+                </div>
+            </div>
+
+            <h4 class="train-detail-heading mb-3">
+                <i class="ti ti-list me-2"></i>Timetable
+            </h4>
+            <div class="table-responsive" style="overflow: visible;">
+                <table class="table table-sm train-timetable">
+                    <thead>
+                        <tr>
+                            <th class="transport-map-col"></th>
+                            <th>Station</th>
+                            <th>Platform</th>
+                            <th class="d-none d-md-table-cell">Scheduled</th>
+                            <th>Expected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Array(5).fill(0).map(() => `
+                        <tr>
+                            <td class="transport-map-col">
+                                <div class="transport-map-item">
+                                    <div class="transport-stop placeholder"></div>
+                                </div>
+                            </td>
+                            <td><span class="placeholder col-9"></span></td>
+                            <td><span class="placeholder col-6"></span></td>
+                            <td class="d-none d-md-table-cell"><span class="placeholder col-8"></span></td>
+                            <td><span class="placeholder col-7"></span></td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -349,6 +425,8 @@ function getTimeDiffClass(scheduledIso, expectedIso) {
 /**
  * Initialize all train search components
  */
+let trainDetailsInitialized = false;
+
 function initTrainPage() {
     initAutocompleteElements();
 
@@ -356,7 +434,11 @@ function initTrainPage() {
         new RecentSearches();
     }
 
-    initTrainDetailsToggle();
+    // Only initialize train details toggle once since we use event delegation
+    if (!trainDetailsInitialized) {
+        initTrainDetailsToggle();
+        trainDetailsInitialized = true;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', initTrainPage);

@@ -29,7 +29,12 @@ class NextFastestTrain
         }
 
         $fromStop = self::mapLocationDetailToCallingAt($fromService['locationDetail'] ?? [], $fromStation);
-        $toStop = self::mapLocationDetailToCallingAt($arrivalService['locationDetail'] ?? [], $toStation);
+        // Pass departure time as reference to handle midnight rollover for arrivals
+        $toStop = self::mapLocationDetailToCallingAt(
+            $arrivalService['locationDetail'] ?? [],
+            $toStation,
+            $fromStop?->expected
+        );
 
         if (!$fromStop || !$toStop) {
             return null;
@@ -70,7 +75,7 @@ class NextFastestTrain
         return $train;
     }
 
-    private static function mapLocationDetailToCallingAt(array $detail, TrainStation $station): ?CallingAt
+    private static function mapLocationDetailToCallingAt(array $detail, TrainStation $station, ?CarbonImmutable $referenceTime = null): ?CallingAt
     {
         $scheduled = $detail['gbttBookedDeparture'] ?? $detail['gbttBookedArrival'] ?? null;
         $expected = $detail['realtimeDeparture'] ?? $detail['realtimeArrival'] ?? null;
@@ -82,8 +87,8 @@ class NextFastestTrain
         $callingAt = new CallingAt();
         $callingAt->station = $station;
         $callingAt->platform = $detail['platform'] ?? null;
-        $callingAt->scheduled = self::parseTime($scheduled);
-        $callingAt->expected = self::parseTime($expected);
+        $callingAt->scheduled = self::parseTime($scheduled, $referenceTime);
+        $callingAt->expected = self::parseTime($expected, $referenceTime);
 
         return $callingAt;
     }

@@ -1,4 +1,5 @@
 @import "@tabler/core/dist/css/tabler.min.css";
+@import "@tabler/core/dist/css/tabler-flags.min.css";
 @import "@tabler/icons-webfont/dist/tabler-icons.min.css";
 @import "nouislider/dist/nouislider.css";
 @import "./trains.css";
@@ -107,4 +108,4 @@
     cursor: ew-resize !important;
 }
 
-/* Custom styles can be added below */
+

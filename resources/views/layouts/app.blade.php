@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Mintopia Tools') }}</title>
+    <title>{{ config('app.name', "Mintopia's Tools") }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -19,13 +19,13 @@
             </button>
             <h1 class="navbar-brand navbar-brand-autodark">
                 <a href="{{ url('/') }}">
-                    {{ config('app.name', 'Mintopia Tools') }}
+                    {{ config('app.name', "Mintopia's Tools") }}
                 </a>
             </h1>
             <div class="collapse navbar-collapse" id="sidebar-menu">
                 <ul class="navbar-nav pt-lg-3">
                     <!-- Network Section -->
-                    <li class="nav-item dropdown {{ request()->routeIs('network.*') ? 'active' : '' }}">
+                    <li class="d-none nav-item dropdown {{ request()->routeIs('network.*') ? 'active' : '' }}">
                         <a class="nav-link dropdown-toggle {{ request()->routeIs('network.*') ? 'show' : '' }}" href="#navbar-network" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="{{ request()->routeIs('network.*') ? 'true' : 'false' }}">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
                                 <i class="ti ti-network"></i>
@@ -80,11 +80,19 @@
                                     <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'fao-stn' ? 'active' : '' }}" href="{{ route('flights.calendar', 'fao-stn') }}">
                                         FAO to STN
                                     </a>
+                                    <hr class="mt-1 mb-1"/>
                                     <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'lon-fao' ? 'active' : '' }}" href="{{ route('flights.calendar', 'lon-fao') }}">
                                         LON to FAO
                                     </a>
                                     <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'fao-lon' ? 'active' : '' }}" href="{{ route('flights.calendar', 'fao-lon') }}">
                                         FAO to LON
+                                    </a>
+                                    <hr class="mt-1 mb-1"/>
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'lon-gla' ? 'active' : '' }}" href="{{ route('flights.calendar', 'lon-gla') }}">
+                                        LON to GLA
+                                    </a>
+                                    <a class="dropdown-item {{ request()->routeIs('flights.calendar') && request()->route('calendar')?->slug === 'gla-lon' ? 'active' : '' }}" href="{{ route('flights.calendar', 'gla-lon') }}">
+                                        GLA to LON
                                     </a>
                                 </div>
                             </div>
@@ -115,6 +123,16 @@
     <!-- Page Content -->
     <div class="page-wrapper">
         @yield('content')
+        <!-- Footer -->
+        <footer class="footer footer-transparent d-print-none">
+            <div class="container-xl">
+                <div class="row">
+                    <div class="col text-center">
+                        Made with <i class="ti ti-heart text-pink"></i> by <a href="https://github.com/mintopia" class="link-secondary">Mintopia</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 </div>
 @livewireScripts

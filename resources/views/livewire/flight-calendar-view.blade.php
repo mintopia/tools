@@ -30,15 +30,23 @@
                                 @endif
                             </small>
                         </div>
-                        <button type="button"
-                                class="btn btn-sm btn-outline-secondary"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#calendar-filters"
-                                aria-expanded="false"
-                                id="calendar-filters-toggle">
-                            <i class="ti ti-filter me-1"></i>
-                            Filters <span class="badge bg-secondary text-dark-fg ms-1" id="active-filters-count" style="display: none;">0</span>
-                        </button>
+                        <div class="btn-group">
+                            <a href="{{ route('flights.calendar.export', $calendar->slug) }}"
+                               class="btn btn-sm btn-outline-primary"
+                               id="export-ical-btn">
+                                <i class="ti ti-calendar-download me-1"></i>
+                                Export iCal
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#calendar-filters"
+                                    aria-expanded="false"
+                                    id="calendar-filters-toggle">
+                                <i class="ti ti-filter me-1"></i>
+                                Filters <span class="badge bg-secondary text-dark-fg ms-1" id="active-filters-count" style="display: none;">0</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Collapsible Filter Section -->

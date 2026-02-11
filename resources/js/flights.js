@@ -1001,6 +1001,9 @@ class FlightCalendarFilters {
 
         // Update active filter count
         this.updateFilterCount();
+
+        // Update export button with filters
+        this.updateExportButton();
     }
 
     hasActiveFilters() {
@@ -1029,6 +1032,37 @@ class FlightCalendarFilters {
                 badge.style.display = 'none';
             }
         }
+    }
+
+    updateExportButton() {
+        const exportBtn = document.getElementById('export-ical-btn');
+        if (!exportBtn) return;
+
+        const baseUrl = exportBtn.href.split('?')[0];
+        const params = new URLSearchParams();
+
+        // Add filter parameters
+        if (this.filters.airlines.length > 0) {
+            params.set('airlines', this.filters.airlines.join(','));
+        }
+        if (this.filters.airports.length > 0) {
+            params.set('airports', this.filters.airports.join(','));
+        }
+        if (this.filters.depTimeMin > 0) {
+            params.set('depTimeMin', this.filters.depTimeMin);
+        }
+        if (this.filters.depTimeMax < 1439) {
+            params.set('depTimeMax', this.filters.depTimeMax);
+        }
+        if (this.filters.arrTimeMin > 0) {
+            params.set('arrTimeMin', this.filters.arrTimeMin);
+        }
+        if (this.filters.arrTimeMax < 1439) {
+            params.set('arrTimeMax', this.filters.arrTimeMax);
+        }
+
+        // Update button href
+        exportBtn.href = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
     }
 
     applyFilters() {
@@ -1083,6 +1117,9 @@ class FlightCalendarFilters {
 
         // Update flight counts per day
         this.updateFlightCounts();
+
+        // Update export button URL with current filters
+        this.updateExportButton();
     }
 
     updateFlightCounts() {

@@ -18,6 +18,7 @@
         "mintopia/laravel-flights": "dev-develop",
         "pear/net_dns2": "^2.0",
         "s1lentium/iptools": "^1.2",
+        "spatie/icalendar-generator": "^3.2",
         "symfony/cache": "*"
     },
     "require-dev": {

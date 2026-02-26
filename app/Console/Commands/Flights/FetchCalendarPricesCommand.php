@@ -49,7 +49,7 @@ class FetchCalendarPricesCommand extends Command
             foreach ($calendars as $calendar) {
                 if ($this->option('queue')) {
                     $this->info("Queued fetching prices for: {$calendar->name}");
-                    Artisan::queue('flights:fetch-calendar-prices', ['id' => $calendar->id]);
+                    Artisan::queue('flights:fetch-calendar-prices', ['--id' => $calendar->id]);
                 } else {
                     $this->info("Fetching prices for: {$calendar->name}");
                     $this->fetchPricesForCalendar($calendar);

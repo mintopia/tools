@@ -33,12 +33,7 @@ class UkHolidaysService
 
                 $data = $response->json();
 
-                if (!isset($data['divisions']['england-and-wales'])) {
-                    Log::warning('UK holidays data structure unexpected', ['data' => $data]);
-                    return collect();
-                }
-
-                $englandWales = $data['divisions']['england-and-wales'];
+                $englandWales = $data['england-and-wales'];
                 $dates = collect();
 
                 // Check if 'events' key exists (current API structure)
